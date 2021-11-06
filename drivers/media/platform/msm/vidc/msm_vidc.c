@@ -25,6 +25,7 @@
 #include "vidc_hfi_api.h"
 #include "msm_vidc_clocks.h"
 #include <linux/dma-buf.h>
+#include <linux/devfreq_boost.h>
 
 #define MAX_EVENTS 30
 
@@ -1981,6 +1982,9 @@ void *msm_vidc_open(int core_id, int session_type)
 	setup_timer(&inst->batch_timer,
 				batch_timer_callback, (unsigned long)inst);
 
+	disable_devfreq_video_boost(true);
+	pr_debug("Disabling boosting for video playback\n");
+
 	return inst;
 fail_init:
 	mutex_lock(&core->lock);
@@ -2209,6 +2213,8 @@ int msm_vidc_close(void *instance)
 	msm_comm_session_clean(inst);
 
 	kref_put(&inst->kref, close_helper);
+	disable_devfreq_video_boost(false);
+	pr_debug("Enabling boosting after video playback\n");
 	return 0;
 }
 EXPORT_SYMBOL(msm_vidc_close);

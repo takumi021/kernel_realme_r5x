@@ -48,6 +48,13 @@ static void devfreq_max_unboost(struct work_struct *work);
 	.boost_freq = freq							\
 }
 
+static int disable_boost = 0;
+
+void disable_devfreq_video_boost(int disable)
+{
+  disable_boost = disable;
+}
+
 static struct df_boost_drv df_boost_drv_g __read_mostly = {
 	BOOST_DEV_INIT(df_boost_drv_g, DEVFREQ_CPU_DDR_BW,
 		       CONFIG_DEVFREQ_CPU_DDR_BW_BOOST_FREQ)
@@ -67,6 +74,9 @@ static void __devfreq_boost_kick(struct boost_dev *b)
 void devfreq_boost_kick(enum df_device device)
 {
 	struct df_boost_drv *d = &df_boost_drv_g;
+
+	if (disable_boost)
+	  return;
 
 	__devfreq_boost_kick(d->devices + device);
 }
